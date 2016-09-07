@@ -6,10 +6,33 @@ bot = t.TeleBot(c.token)
 
 upd = bot.get_updates()
 
-print(bot.get_me())
+
+WEBHOOK_HOST = 'https://safe-cliffs-44070.herokuapp.com/'
+WEBHOOK_URL_PATH = '/bot'
+WEBHOOK_PORT = os.environ.get('PORT',5000)
+WEBHOOK_LISTEN = '0.0.0.0'
+
+
+WEBHOOK_URL_BASE = "https://%s/%s"% (WEBHOOK_HOST,WEBHOOK_URL_PATH)
+
+
 # last_upd = upd[-1]
 # last_updMessage = last_upd.message
 # print(last_updMessage)
+
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    # Если вы будете использовать хостинг или сервис без https
+    # то вам необходимо создать сертификат и
+    # добавить параметр certificate=open('ваш сертификат.pem')
+    return "%s" %bot.set_webhook(url=WEBHOOK_URL_BASE), 200
+
+@server.route("/remove")
+def remove_hook():
+    bot.remove_webhook()
+    return "Webhook has been removed"
+
 @bot.message_handler(commands=["help"])
 def handle_text(message):
     bot.send_message(message.chat.id, "Я бот, который поможет тебе узнать все о нашей школе!")
@@ -84,4 +107,5 @@ def handle_command(message):
 def handle_command(message):
     print("Пришло фото")
 
-bot.polling(none_stop=True, interval=0)
+server.run(host="0.0.0.0", port=os.environ.get('PORT', 5000))
+webhook()
